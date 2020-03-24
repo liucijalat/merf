@@ -7,7 +7,7 @@ Mixed Effects Random Forest
 import logging
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.exceptions import NotFittedError
 
 logger = logging.getLogger(__name__)
@@ -157,10 +157,11 @@ class MERF(object):
             # TODO: Other checks we want to do?
             assert len(y_star.shape) == 1
 
-            # Do the random forest regression with all the fixed effects features
-            rf = RandomForestRegressor(**self.rf_params)
+            # Do the random forest classification with all the fixed effects features
+            rf = RandomForestClassifier(**self.rf_params)
             rf.fit(X, y_star)
-            f_hat = rf.oob_prediction_
+            # take the predictions for positive class
+            f_hat = rf.oob_decision_function_[:, 1]
 
             # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ M-step ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             sigma2_hat_sum = 0
@@ -266,6 +267,8 @@ class MERF(object):
         self.trained_b = b_hat_df
 
         return self
+
+
 
     def score(self, X, Z, clusters, y):
         raise NotImplementedError()
